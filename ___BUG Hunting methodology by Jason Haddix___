@@ -1,0 +1,277 @@
+___BUG Hunting methodology by Jason Haddix___
+
+Topics:
+[+] Getting started 
+[+] Mental Hurldles 
+[+] Pre-manual testing and Automation
+[+] Content discovery 
+[+] Application Analysis
+
+[*] Books:
+	Web application hacker's handbook
+	Real world bug hunting 
+	OWASP ref 
+	vickie lee
+	hacking APIs
+
+Mental Hurdles:
+
+- client reputation 
+- pre testing (Leaderboard toppers !)
+- size 
+- self hosted (open sourced ? no bugs ? NO!)
+- only touching the surface !!
+
+
+[+] Pre - Maual testing and automation 
+
+- Tech profiling
+	+ Whatruns / wappalyzer
+	+ webanaly
+	ze (CLI)
+
+- Finding CVE's and misconfigs
+	+ Nuclie-templates
+		-- 1000+ cve's
+		-- 100+ informational detections
+		-- 500+ admin panel detectors
+		-- 1500 + other checks 
+			* creds/keys
+			* 67 subdomain takeover
+			* HTTP form brute force 
+			* 3428 total templates
+				--- REMEMBER to use this tool on areas which no one has touched yet .
+			* Using tweetdeck and writing new nuclei templates on 1 days , 30 days etc
+
+	+ Gofingerprint
+	+ Sn1per
+	+ intrigue core 
+	+ Vulners (Burp ext)
+	+ jaeles Scanner
+	+ retire.js
+
+
+
+	+ Known vulns
+	+ Default creds 
+
+- Port scan 
+	+ Naabu (simple)
+		-- Fast and simple
+
+	+ RustScan (Fast)
+
+Testing layers
+	- open ports and services 
+	- web hosting software
+	- Application Framework
+	- Application : Custom code or COTS
+	- Application libraries ( Usually JS )
+	- integrations
+
+
+[+] Content Discovery
+
+ - Feroxbuster
+ - Dirsearch 
+ - ffuf
+ - wfuzz
+ - Gobuster
+ - turbo intuder
+ 	+ use proper  wordlist on appropriate target
+
+ MAP 
+
+ ---- wordlsits.assetnote.io
+
+ TECH
+ 	+ IIS/MSF
+ 		- httparchive_aspx_asp_cfm_svc_ashx_asmx.....
+ 		- ISS Shortname Scanner
+
+ 	+ PHP + CGI
+ 		- httparchive_cgi_pl_
+ 		- httparchive_php
+
+ 	+ General API
+ 		- httparchive_apiroutes_..
+ 		- swagger-wordlist.txt
+ 		- git hub danielmiessler api/api-endpoints.txt
+
+ 	+ Java
+ 		- httparchive_jsp_jspa_do_action_..
+
+ 	+ Generic
+ 		- httparchive_directories_1m_..
+ 		- RAFT
+ 		- Robots disallowed
+ 		- /OneListForAll
+ 		- jhaddix/content_discovery_all.txt
+
+ 	+ Others
+ 		* anything in the technology 
+ 		host mappings
+
+ 		- AEM
+ 		- Apache
+ 		- Cherrypy
+ 		- Coldfusion
+ 		- Django 
+ 		- Express
+ 		- Flask
+ 		- Laravel
+ 		- Nginx
+ 		- Rails
+ 		- Spring 
+ 		- Symfony
+ 		- Tomcat
+ 		- Yii
+ 		- Zend
+
+ 	+ Tips
+ 		- Pay special attention to
+ 			* Config files for DB connections
+ 			* Where the admin login and route / endpoints are 
+
+ 			You can find these by Google-ing online help docs and stack exchange
+
+ 		- Making custom wordlist from source code
+ 			* danielmiessler/Source2URL
+ 			* dockerhub 
+
+ 		- COTS/Paid
+ 			* Ask for demo 
+ 				hello , can i get a demo ? 
+ 		- CUSTOM wordlist
+ 			* Scavenger (Burp ext)
+
+ 	+ Historical
+ 		- gau (get all urls)
+ 			one liner : echo <target.com> | gau | wordlistgen | sort -u 
+
+ 		- waymore 
+ 			- parses params , endpoints , links from api etc
+
+ 		+ Recursion
+ 			- /admin/
+ 				/admin/dashboard/
+ 					/admin/dashboard/members
+ 		401 replies should be investigated with wayback machine 
+
+ 		+ Endpoints from mobile apps
+ 			- github /dwisiswant0/apkleaks
+
+ 	+ Tip-Changes
+ 		- Targets Newsletters
+ 		- Affiliate Programs
+ 		- Googling Conference Talks 
+ 		- Monitoring the domain for code changes
+ 			-- github /dgtlmoon/changedetection.io
+
+[+] Application Analysis
+- Big Questions
+	# 1 How does the app pass data ? 
+	# 2 How / where does the app talk about users ? 
+	 -- Users 
+	 	^ where
+	 		--- cookies
+	 		--- api calls 
+	 	^ How
+	 		--- UID
+	 		--- email
+	 		--- username
+	 		--- UUID
+	# 3 Does the site have multi-tenancy or user levels ? 
+		-- Users
+			^ App is designed for multiple customers 
+			^ app has multiple user levels 
+				--- Admin (cms/framework)
+				--- Tenant/Account Admin
+				--- Tenant/Account user 
+				--- Tenant/Account Viewer
+				--- Unauthenticated Functionality
+	# 4 does the site have unique threat model ?
+	# 5 has there been past security research & vulns ? 
+	# 6 how does the app handles 
+		* XSS
+		* CSRF
+		* Code injection (SQL, Template, ++)
+- Spidering
+	* Zap & Burp
+	* hakcrawler (CLI)
+	* GoSpider
+- JavaScript Analysis
+	* xnLinkFinder @Xnl-h4ck3r
+	* GAP(Burp ext) @Xnl-h4ck3r
+	* Tip
+		-- beautifier.io for manual assesment
+	* Libs/Dependencies
+- Hot Areas
+	+ SPIDEY SENSE !!
+	{+} HEAT MAP (WIP)
+
+		[Upload Functions]
+			* Integrations from the third party
+				(*) XSS
+			* Self Uploads
+				:: XML based (docs/PDF)
+					(*) SRF, XSS , XXE
+				:: image
+					(*) XSS , shells 
+						(1) Name
+						(2) Binary header
+						(3) Metadata
+			* Where is data stored ? 
+				:: s3 patterns
+
+		[Content Types]
+			* Look for multipart forms 
+				:: shell, injections
+			* look for content type XML
+				:: XXE
+			* look for content type JSON
+				:: API vulns
+
+		[APIs]
+			* Hidden methods
+			* Lack of auth
+
+		[Account Section]
+			* Profile
+			* App Custom fields
+				:: Stored XSS , SSTI
+			* integrations
+				:: SSRF , XSS
+		[Errors]
+
+			* Exotic Injections
+			* App DoS
+
+		[Paths or URLs passed as values]
+			* SSRF
+			* Redirs
+
+
+- Parameter analysis
+	* HUNT -- project by jhaddix
+	* Gf-patterns
+		-- example : cat urls.txt | gf sqli
+	BurpBounty(Burp ext Paid)
+
+
+- Personal tracking 	
+	* Notion
+	* Obsidian
+
+WOAH ! ! ! 
+
+This H@cktivitycon talk was given at the H1-702 Live Hacking Event in Las Vegas!
+CREDITS: HACKERONE YT , @JasonHaddix
+LINK TO VIDEO: https://youtu.be/FqnSAa2KmBI?si=KVluHS7LOzMLqZMg
+Follow Jason: https://twitter.com/Jhaddix 	
+
+This is just notes of slides which were presented by jason haddix sir in live hacking event and i tend to forget things when hunting on a site as i am a noob 
+Happy hacking !!
+
+
+
